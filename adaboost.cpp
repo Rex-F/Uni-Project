@@ -114,14 +114,14 @@ int main()
                     }
                 }
 
-
+                float partialSum;
                 float errorProportion = 0.0;
                 for (int q =0; q<numDatapoints; ++q) {
-                    float tempError = comparisonArray[q]*weightArray[q];
-                    errorProportion = errorProportion + tempError;
+                    partialSum = comparisonArray[q]*weightArray[q];
+                    errorProportion = errorProportion + partialSum;
                     cout << "ComparisonArray number " << comparisonArray[q] << endl; //0s are good, 1s are misclassified
                     cout << "WeightArray is " << weightArray[q] << endl;
-                    cout << "TempError is " << tempError << endl;
+                    cout << "PartialSum is " << partialSum << endl;
                     cout << "ErrorProportion is " << errorProportion << endl;
                 }
 
