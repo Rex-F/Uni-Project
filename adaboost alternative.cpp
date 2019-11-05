@@ -12,10 +12,10 @@ using namespace std;
  //void merge(float arr[numDatapoints][2], int low, int high, int mid, int numDatapoints);
  //void merge_sort(float arr[numDatapoints][2], int low, int high, int numDatapoints);
 
- void merge(float arr[][2], int low, int high, int mid, int numDatapoints)
+ void merge(float arr[][3], int low, int high, int mid, int numDatapoints)
 	{
 	    int i, j, k;
-	    float c[numDatapoints][2];
+	    float c[numDatapoints][3];
 	    i = low;
 	    k = low;
 	    j = mid + 1;
@@ -23,12 +23,14 @@ using namespace std;
 	        if (arr[i][0] < arr[j][0]) {
 	            c[k][0] = arr[i][0];
 	            c[k][1] = arr[i][1];
+	            c[k][2] = arr[i][2];
 	            k++;
 	            i++;
 	        }
 	        else  {
 	            c[k][0] = arr[j][0];
 	            c[k][1] = arr[j][1];
+	            c[k][2] = arr[j][2];
 	            k++;
 	            j++;
 	        }
@@ -36,21 +38,24 @@ using namespace std;
 	    while (i <= mid) {
 	        c[k][0] = arr[i][0];
 	        c[k][1] = arr[i][1];
+	        c[k][2] = arr[i][2];
 	        k++;
 	        i++;
 	    }
 	    while (j <= high) {
 	        c[k][0] = arr[j][0];
 	        c[k][1] = arr[j][1];
+	        c[k][2] = arr[j][2];
 	        k++;
 	        j++;
 	    }
 	    for (i = low; i < k; i++)  {
 	        arr[i][0] = c[i][0];
 	        arr[i][1] = c[i][1];
+	        arr[i][2] = c[i][2];
 	    }
 	}
-void merge_sort(float arr[][2], int low, int high, int numDatapoints) {
+void merge_sort(float arr[][3], int low, int high, int numDatapoints) {
 
     int mid;
     if (low < high){
@@ -133,29 +138,30 @@ int main()
     for (int h=0; h<numDatapoints; ++h) {
         weightArray[h] = initialWeight;
     }
+    for (int i = 0; i<numDatapoints; i++) {
+        dataArray[i].push_back(weightArray[i]);
+    }
 
-    int posClassificationArray[numDatapoints];
-    int negClassificationArray[numDatapoints];
 
-    for (int g=0; g<numDatapoints; ++g) {
-        if (dataArray[g][numFeatures] == 1) {
-            posClassificationArray[g] = 1;
-            negClassificationArray[g] = 0;
+
+    int posClassArray[numDatapoints];
+    int negClassArray[numDatapoints];
+
+    int orderedPosClassArray[numDatapoints];
+    int orderedNegClassArray[numDatapoints];
+
+     for (int g=0; g<numDatapoints; ++g) {
+            if (dataArray[g][numFeatures] == 1) {
+                posClassArray[g] = 1;
+                negClassArray[g] = 0;
+            }
+            else {
+                posClassArray[g] = 0;
+                negClassArray[g] = 1;
+            }
+
         }
-        else {
-            posClassificationArray[g] = 0;
-            negClassificationArray[g] = 1;
-        }
 
-    }
-    cout << "Classification Arrays Pos then Neg" << endl;
-    for (int g=0; g<numDatapoints; ++g) {
-        cout << posClassificationArray[g] << " ";
-    }
-    cout << endl;
-    for (int g=0; g<numDatapoints; ++g) {
-        cout << negClassificationArray[g] << " ";
-    }
 
 
 
@@ -164,8 +170,8 @@ int main()
 
     //loop that finds the total weightings for each of positive and negative classes
     for (int q =0; q<numDatapoints; ++q) {
-        partialSumPos = posClassificationArray[q]*weightArray[q];
-        partialSumNeg = negClassificationArray[q]*weightArray[q];
+        partialSumPos = posClassArray[q]*weightArray[q];
+        partialSumNeg = negClassArray[q]*weightArray[q];
         totalPos = totalPos + partialSumPos;
         totalNeg = totalNeg + partialSumNeg;
     }
@@ -180,67 +186,80 @@ int main()
         float sumNegOnTheLine = 0.0;
 
          //create array of only the specific feature with its classification
-        float tempArray[numDatapoints][2];
+        float tempArray[numDatapoints][3];
 
         for (int ac = 0; ac<numDatapoints; ac++) {
             tempArray[ac][0] = dataArray[ac][ab];
             tempArray[ac][1] = dataArray[ac][numFeatures];
+            tempArray[ac][2] = dataArray[ac][numFeatures+1];
         }
 
         merge_sort(tempArray, 0, numDatapoints-1, numDatapoints);    //sort this temporary array
 
-         cout << "\nWeightings" << endl;
+        for (int g=0; g<numDatapoints; ++g) {
+            if (tempArray[g][1] == 1) {
+                orderedPosClassArray[g] = 1;
+                orderedNegClassArray[g] = 0;
+            }
+            else {
+                orderedPosClassArray[g] = 0;
+                orderedNegClassArray[g] = 1;
+            }
 
-        for (size_t i=0; i<numDatapoints; ++i) {
+        }
+        cout << "orderedPosClassArray" << endl;
+        for (int aq = 0; aq<numDatapoints; aq++) {
+            cout << orderedPosClassArray[aq] << " ";
+        }
+        cout << "orderedNegClassArray" << endl;
+        for (int aq = 0; aq<numDatapoints; aq++) {
+            cout << orderedNegClassArray[aq] << " ";
+        }
+        cout << endl;
 
-                cout << weightArray[i] << " ";
-             }
+
+
+
 
 
 
         cout << "\nSorted Array" << endl;
 
         for (size_t i=0; i<numDatapoints; ++i) {
-
-                cout << tempArray[i][0] << " ";
+            for (size_t j=0; j<3; ++j) {
+                 cout << tempArray[i][j] << " ";
              }
-             cout << "\nClasses after sorting " << endl;
-          for (size_t i=0; i<numDatapoints; ++i) {
+             cout << endl;
+        }
 
-                cout << tempArray[i][1] << " ";
-             }
-        cout << "\nUnsorted Array" << endl;
-        for (size_t i=0; i<numDatapoints; ++i) {
-
-                cout << dataArray[i][ab] << " ";
-             }
-        cout << endl;
 
 
 
         for(int ad=0; ad<numDatapoints; ad++) {
 
             rightPosThresError = sumPosOnTheLine + (totalNeg - sumNegOnTheLine);
-            cout << "rightError is " << rightPosThresError << " = " << sumPosOnTheLine << " + " << totalNeg << " - " << sumNegOnTheLine << endl;
+            cout << "right error = sumPosOnTheLine + totalNeg - sumNegOnTheLine" << endl;
+            cout << rightPosThresError << " = " << sumPosOnTheLine << " + " << totalNeg << " - " << sumNegOnTheLine << endl << endl;
 
             if (tempArray[ad][1] == -1) {
                 cout << "Previous Sum on the Neg is " << sumNegOnTheLine << endl;
-                sumNegOnTheLine = sumNegOnTheLine + negClassificationArray[ad]*weightArray[ad];
-                cout << "sum on the Neg = previous + negClassArray*Weight Array " << endl;
-                cout << sumNegOnTheLine << "+ previous = " << negClassificationArray[ad] << weightArray[ad];
+                sumNegOnTheLine = sumNegOnTheLine + orderedNegClassArray[ad] * tempArray[ad][2];
+                cout << "sumNegOnTheLine = previous + negClassArray * tempArray weighting " << endl;
+                cout << sumNegOnTheLine << " = previousSumNeg + " << orderedNegClassArray[ad] << " * " << tempArray[ad][2] << endl << endl;
             }
             else {
                 cout << "Previous Sum on the Pos is " << sumPosOnTheLine << endl;
-                sumPosOnTheLine = sumPosOnTheLine + posClassificationArray[ad]*weightArray[ad];
+                sumPosOnTheLine = sumPosOnTheLine + orderedPosClassArray[ad]*tempArray[ad][2];
 
-                cout << "sum on the Neg = previous + negClassArray*Weight Array " << endl;
-                cout << sumPosOnTheLine << "+ previous = " << posClassificationArray[ad] << weightArray[ad];
+                cout << "SumPosOnTheLine = previous + posClassArray * Weight Array " << endl;
+                cout << sumPosOnTheLine << " = previousSumPos + " << orderedPosClassArray[ad] << " * "<< tempArray[ad][2] << endl << endl;
             }
 
             leftPosThresError = sumNegOnTheLine + (totalPos - sumPosOnTheLine);
-            cout << "leftError is " << leftPosThresError << " = " << sumNegOnTheLine << " + " << totalPos << " - " << sumPosOnTheLine << endl;
-            cout << "Sum Negative on the line is " << sumNegOnTheLine << " Sum Pos on the Line is " << sumPosOnTheLine << endl;
-             cout << "right error " << rightPosThresError << " left error " << leftPosThresError << endl;
+            cout << "left error = sumNegOnTheLine + totalPos - sumPosOnTheLine" << endl;
+            cout << leftPosThresError << " = " << sumNegOnTheLine << " + " << totalPos << " - " << sumPosOnTheLine << endl << endl;
+            cout << "in conclusion Sum Negative on the line is " << sumNegOnTheLine << " SumPosontheLineis " << sumPosOnTheLine << endl;
+             cout << "in conclusion right error is " << rightPosThresError << " and left error is " << leftPosThresError << endl;
 
 
             if (minError > rightPosThresError) {
@@ -256,7 +275,7 @@ int main()
                 bestDirection = -1;
             }
 
-            cout << "best error is " << minError << endl;
+            cout << "best error is " << minError << endl << endl;
         }
 
 
