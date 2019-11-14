@@ -11,16 +11,198 @@
 
 using namespace std;
 
+void thresCompare (int currentLevel, int maxLevel, int pos, float& bestThreshold, int& bestDirection, float& minimumError, int& bestFeature,
+	vector<vector<vector<float> > > &dataArrays, vector<vector<float> > singleBoostArray) {
+
+    cout << "thresCompare called" << endl;
+
+    float alpha;
+
+
+	int directionArray[2] = {1, -1};
+	cout << "thresCompare called" << endl;
+    int numFeatures = dataArrays[pos][0].size()-2;
+    int numDatapoints = dataArrays[pos].size();
+    float sumWeights = 0.0;
+    cout << "thresCompare called" << endl;
+    cout << "numFeatures is " << numFeatures << " numDatapoints is " << numDatapoints << endl;
+
+
+    for (int i=0; i< numDatapoints; i++) {
+        sumWeights = sumWeights + dataArrays[pos][i][numFeatures+1];
+    }
+    cout << "thresCompare called" << endl;
+
+    for (int i=0; i< numDatapoints; i++) {   //normalise the weights
+        dataArrays[pos][i][numFeatures+1] = dataArrays[pos][i][numFeatures+1]/sumWeights;
+
+    }
+    cout << "after assigning weights" << endl;
+
+    for(int i=0; i<numFeatures; ++i) {   //first loop, cycle through features
+
+        for(int j=0; j<2; ++j) {  //second loop, need our cycle to test both directions
+
+            for (int k=0; k<numDatapoints; ++k) { //third loop, cycle through datapoint values for each feature
+
+                int tempArray[numDatapoints];
+
+                if (directionArray[j] == 1) {
+                        for(int m =0; m<numDatapoints; ++m) {
+                            tempArray[m] = (dataArrays[pos][m][i] >= dataArrays[pos][k][i]);
+                            //cout << "compare " << dataArrays[pos][m][i] << " to threshold " << dataArrays[pos][k][i] << endl;
+                            //cout << "1s for trues, 0s for falses "<< tempArray[m] << endl;
+                        }
+                }
+
+
+                if (directionArray[j] == -1) {
+                        for(int m =0; m<numDatapoints; ++m) {
+                            tempArray[m] = (dataArrays[pos][m][i] < dataArrays[pos][k][i]);
+                        }
+                }
+
+
+
+                for (int n=0; n<numDatapoints; ++n) {
+                    if (tempArray[n] == 0) {
+                        tempArray[n] = -1;
+                    }
+                }
+                //cout << endl;
+
+                int comparisonArray[numDatapoints];
+
+                for (int p =0; p<numDatapoints; ++p) {
+                    if(tempArray[p] == dataArrays[pos][p][numFeatures]){
+                        comparisonArray[p] = 0;
+                    }
+                    else {
+                        comparisonArray[p] = 1;
+                    }
+                }
+
+                float partialSum;
+                float errorProportion = 0.0;
+                for (int q =0; q<numDatapoints; ++q) {
+                    partialSum = comparisonArray[q]*dataArrays[pos][q][numFeatures+1];
+                    errorProportion = errorProportion + partialSum;
+                   // cout << "ComparisonArray number " << comparisonArray[q] << endl; //0s are good, 1s are misclassified
+                    //cout << "WeightArray is " << dataArrays[pos][q][numFeatures+1] << endl;
+                   // cout << "PartialSum is " << partialSum << endl;
+                   // cout << "ErrorProportion is " << errorProportion << endl;
+                }
+
+                if (errorProportion < minimumError) {
+                    minimumError = errorProportion;
+                    bestThreshold = dataArrays[pos][k][i];
+                    bestDirection = directionArray[j];
+                    bestFeature = i;
+                    cout << "minimum error is " << minimumError << endl;
+                    cout << "best threshold is " << bestThreshold << endl;
+                    cout << "best direction is " << bestDirection << endl;
+                    cout << "best feature is " << bestFeature << endl;
+                }
+
+
+            }//end datapoints loop
+        } //end direction loop
+
+    }//end feature loop
+
+    cout << "after feature loop ends" << endl;
+
+    if (minimumError == 0.0) {minimumError = 0.0000001;}
+    alpha = 0.5*log((1.0 - minimumError)/(minimumError));
+
+    float rowHelper[] = {minimumError, bestThreshold, bestDirection, bestFeature, alpha};
+    vector<float> boostingRow(rowHelper, rowHelper+5);
+
+
+    singleBoostArray.push_back(boostingRow);
+
+
+
+
+    if (currentLevel < maxLevel) {
+        dataArrays.resize(pos+3);
+        vector<float> row1;
+        vector<float> row2;
+        vector<vector<float> > singleArray1;
+        vector<vector<float> > singleArray2;
+        cout << "inside our splitter" << endl;
+        cout << "threshold is " << bestThreshold << endl;
+
+
+        for (int i=0; i<numDatapoints; ++i) {
+
+
+             if (dataArrays[pos][i][bestFeature] < bestThreshold) {
+                cout << "have a hit less than" << endl;
+                for (int a=0; a<numFeatures+2; ++a) {
+                    row1.push_back(dataArrays[pos][i][a]);
+                    cout << "push back " << dataArrays[pos][i][a];
+                }
+                singleArray1.push_back(row1);
+                row1.clear();
+                dataArrays[pos+1] = singleArray1;
+
+                cout << "have a hit less than" << endl;
+             }
+        }
+        for (int i=0; i<numDatapoints; ++i) {
+
+
+             if (dataArrays[pos][i][bestFeature] >= bestThreshold) {
+                  cout << "have a hit greater than" << endl;
+                for (int a=0; a<numFeatures+2; ++a) {
+                    row2.push_back(dataArrays[pos][i][a]);
+                    cout << "push back " << dataArrays[pos][i][a];
+                }
+                singleArray2.push_back(row2);
+                row2.clear();
+                 cout << "have a hit greater than2" << endl;
+                dataArrays[pos+2] = singleArray2;
+
+                    cout << "have a hit greater than3" << endl;
+             }
+        }
+
+   currentLevel++;
+
+   thresCompare(currentLevel, maxLevel, pos, bestThreshold,
+                 bestDirection, minimumError, bestFeature, dataArrays, singleBoostArray);
+
+
+   thresCompare(currentLevel, maxLevel, pos, bestThreshold,
+                 bestDirection, minimumError, bestFeature, dataArrays, singleBoostArray);
+
+
+    }//end of if we need call more loop
+
+
+
+
+
+ }//end function
+
 
 int main()
 {
     string filename;
+
+    int maxLevel;
     int numBoostingRounds;
-    float alpha;
+    int currentLevel = 1;
+
+    int pos = 0;  //the position the 2d array we are curretnly accessing is on the 3d array
 
     cout << "Enter the number of boosting rounds: " << endl;
     cin >> numBoostingRounds;
     //ifstream in(filename.c_str());
+    cout << "Enter the number of tree levels (where a level of one is a stump: " << endl;
+    cin >> maxLevel;
+
 
     ifstream in("dataset.csv");
 
@@ -31,7 +213,9 @@ int main()
     vector<vector<vector<float> > > dataArrays;  // create 3D array
 
 
-    vector< vector<float> > boostingArray;
+    vector<vector<vector<float> > > boostingArrays;
+    vector<vector<float > > singleBoostArray;
+
 
     getline (in, line);
     stringstream ss(line);
@@ -61,15 +245,15 @@ int main()
     }
     dataArrays.push_back(singleArray);
 
-    int directionArray[2] = {1, -1};
+    int numDatapoints = dataArrays[0].size();
+    int numFeatures = dataArrays[0][0].size()-1;
 
-    int numFeatures = dataArray[0].size()-1;
-    int numDatapoints = dataArray.size();
 
     float initialWeight = 1.0/numDatapoints;
-    float weightArray[numDatapoints];
+
+
     for (int h=0; h<numDatapoints; ++h) {
-        weightArray[h] = initialWeight;
+        dataArrays[pos][h].push_back(initialWeight);   //creating a weighting column for our current array
     }
 
 for (int boostNum=0; boostNum<numBoostingRounds; boostNum++) {
@@ -80,100 +264,32 @@ for (int boostNum=0; boostNum<numBoostingRounds; boostNum++) {
     int bestFeature = 9999;
 
 
-    //cout << numDatapoints << endl;
-    //cout << initialWeight << endl;
+
+
+    thresCompare(currentLevel, maxLevel, pos, bestThreshold,
+                 bestDirection, minimumError, bestFeature, dataArrays, singleBoostArray);
+
+    boostingArrays.push_back(singleBoostArray);
+
+    cout << "our first split array" << endl;
 
 
 
-    for(int i=0; i<numFeatures; ++i) {   //first loop, cycle through features
+    for (int i=0; i<dataArrays[1].size(); ++i){
+            for (int j=0; j<numFeatures+2; ++j) {
+                cout << dataArrays[1][i][j] << " ";
+            }
+            cout << endl;
+    }
+    cout << endl;
+    cout << "our second split array" << endl;
+     for (int i=0; i<dataArrays[2].size(); ++i){
+            for (int j=0; j<numFeatures+2; ++j) {
+                cout << dataArrays[2][i][j] << " ";
+            }
+            cout << endl;
+    }
 
-        for(int j=0; j<2; ++j) {  //second loop, need our cycle to test both directions
-
-            for (int k=0; k<numDatapoints; ++k) { //third loop, cycle through datapoint values for each feature
-
-                int tempArray[numDatapoints];
-
-                if (directionArray[j] == 1) {
-                        for(int m =0; m<numDatapoints; ++m) {
-                            tempArray[m] = (dataArray[m][i] >= dataArray[k][i]);
-                            //cout << "compare " << dataArray[m][i] << " to threshold " << dataArray[k][i] << endl;
-                            //cout << "1s for trues, 0s for falses "<< tempArray[m] << endl;
-                        }
-                }
-
-
-                if (directionArray[j] == -1) {
-                        for(int m =0; m<numDatapoints; ++m) {
-                            tempArray[m] = (dataArray[m][i] < dataArray[k][i]);
-                        }
-                }
-
-                for (int n=0; n<numDatapoints; ++n) {
-                    if (tempArray[n] == 0) {
-                        tempArray[n] = -1;
-                    }
-                }
-                //cout << endl;
-
-                int comparisonArray[numDatapoints];
-
-                for (int p =0; p<numDatapoints; ++p) {
-                    if(tempArray[p] == dataArray[p][numFeatures]){
-                        comparisonArray[p] = 0;
-                    }
-                    else {
-                        comparisonArray[p] = 1;
-                    }
-                }
-
-                float partialSum;
-                float errorProportion = 0.0;
-                for (int q =0; q<numDatapoints; ++q) {
-                    partialSum = comparisonArray[q]*weightArray[q];
-                    errorProportion = errorProportion + partialSum;
-                   // cout << "ComparisonArray number " << comparisonArray[q] << endl; //0s are good, 1s are misclassified
-                    //cout << "WeightArray is " << weightArray[q] << endl;
-                   // cout << "PartialSum is " << partialSum << endl;
-                   // cout << "ErrorProportion is " << errorProportion << endl;
-                }
-
-                if (errorProportion < minimumError) {
-                    minimumError = errorProportion;
-                    bestThreshold = dataArray[k][i];
-                    bestDirection = directionArray[j];
-                    bestFeature = i;
-
-                }
-
-
-            }//end datapoints loop
-        } //end direction loop
-
-    } //end feature loop
-
-    /*cout << "minimum error is " << minimumError << endl;
-    cout << "best threshold is " << bestThreshold << endl;
-    cout << "best direction is " << bestDirection << endl;
-    cout << "best feature is " << bestFeature << endl;
-    */
-    //next need to calculate alpha of classifier found
-
-    //while in a boosting round that resets the row every boosting loop
-    if (minimumError == 0.0) {minimumError = 0.0000001;}
-
-    float rowHelper[] = {minimumError, bestThreshold, bestDirection, bestFeature};
-    vector<float> boostingRow(rowHelper, rowHelper+4);
-
-
-    boostingArray.push_back(boostingRow);
-
-
-
-    alpha = 0.5*log((1.0 - minimumError)/(minimumError));
-
-
-
-    boostingArray[boostNum].push_back(alpha);
 
     /*for (int i = 0; i<5; i++) {
         cout << boostingArray[0][i] << endl; //replace 0 with appropriate boosting round counter variable
@@ -184,7 +300,7 @@ for (int boostNum=0; boostNum<numBoostingRounds; boostNum++) {
 
     for (int i=0; i<numDatapoints; i++) {
         if (bestDirection == -1) {
-            if (dataArray[i][bestFeature] < bestThreshold) {
+            if (dataArrays[pos][i][bestFeature] < bestThreshold) {
                 predictArray[i] = 1;
             }
 
@@ -194,7 +310,7 @@ for (int boostNum=0; boostNum<numBoostingRounds; boostNum++) {
         }
         else {
            if (bestDirection == 1) {
-                if (dataArray[i][bestFeature] < bestThreshold) {
+                if (dataArrays[pos][i][bestFeature] < bestThreshold) {
                     predictArray[i] = -1;
                 }
                 else {
@@ -213,7 +329,7 @@ for (int boostNum=0; boostNum<numBoostingRounds; boostNum++) {
     /*int lossArray[numDatapoints];
 
     for (int i=0; i< numDatapoints; i++) {
-        if (predictArray[i] == dataArray[i][numFeatures]) {
+        if (predictArray[i] == dataArrays[pos][i][numFeatures]) {
             lossArray[i] = 0;
         }
         else {
@@ -228,24 +344,27 @@ for (int boostNum=0; boostNum<numBoostingRounds; boostNum++) {
     */
     float sumWeights = 0;
     for (int i=0; i< numDatapoints; i++) {  //updating the weights, all this takes is actual vs predicted and alpha.
-        weightArray[i] = weightArray[i] * exp((-alpha)*dataArray[i][numFeatures]*predictArray[i]);
-        sumWeights = sumWeights + weightArray[i];
+        dataArrays[pos][i][numFeatures+1] = dataArrays[pos][i][numFeatures+1] * exp((-boostingArrays[boostNum][0][4])*dataArrays[pos][i][numFeatures]*predictArray[i]);
+        sumWeights = sumWeights + dataArrays[pos][i][numFeatures+1];
     }
     for (int i=0; i< numDatapoints; i++) {   //normalise the weights
-        weightArray[i] = weightArray[i]/sumWeights;
+        dataArrays[pos][i][numFeatures+1] = dataArrays[pos][i][numFeatures+1]/sumWeights;
 
     }
 
 
 
- }
-    cout << "Minimum Error | Best Threshold | Best Direction | Best Feature | Alpha" << endl;
-  for (int i=0; i<numBoostingRounds; i++) {
-        for (int j=0; j<5; j++) {
-            cout << boostingArray[i][j] << "\t\t";
-        }
-      cout << endl;
-  }
+ }//end of boosting rounds
+
+
+ //   cout << "Minimum Error | Best Threshold | Best Direction | Best Feature | Alpha" << endl;
+  //for (int h=0; )
+  //for (int i=0; i<numBoostingRounds; i++) {
+  //      for (int j=0; j<5; j++) {
+  //          cout << boostingArrays[i][j] << "\t\t";
+  //      }
+  //    cout << endl;
+  //}
 
 
   ifstream in2("dataset.csv");
@@ -299,6 +418,9 @@ for (int boostNum=0; boostNum<numBoostingRounds; boostNum++) {
     int finalClassification[numDatapoints];
 
     //boosting array 0 minimumError, 1 bestThreshold, 2 bestDirection, 3 bestFeature, 4 alpha
+
+   /*
+
     for (int i=0; i<numBoostingRounds; i++) {
         for (int j=0; j<numDatapoints; j++) {
             if (boostingArray[i][2] == -1) {
@@ -338,6 +460,7 @@ for (int boostNum=0; boostNum<numBoostingRounds; boostNum++) {
         cout << finalClassification[m] << " ";
     }
 
+    */
 
 
 } //end main
