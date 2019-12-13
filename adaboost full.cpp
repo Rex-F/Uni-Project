@@ -12,7 +12,7 @@
 
 using namespace std;
 
-
+ ofstream fout("output.csv");
 
 struct bestThresReturns {
     double minimumError;
@@ -320,8 +320,8 @@ bestThresReturns discoverBestThresSorted(vector<vector<double> > &dataArray) {
         totalPos = totalPos + partialSumPos;
         totalNeg = totalNeg + partialSumNeg;
     }
-    cout << "\nTotal Pos is " << totalPos << endl;
-    cout << "Total Neg is " << totalNeg << endl;
+    //cout << "\nTotal Pos is " << totalPos << endl;
+   // cout << "Total Neg is " << totalNeg << endl;
 
 
 
@@ -352,7 +352,7 @@ bestThresReturns discoverBestThresSorted(vector<vector<double> > &dataArray) {
             }
 
         }
-        cout << "orderedPosClassArray" << endl;
+       /* cout << "orderedPosClassArray" << endl;
         for (int aq = 0; aq<numDatapoints; aq++) {
             cout << orderedPosClassArray[aq] << " ";
         }
@@ -360,7 +360,7 @@ bestThresReturns discoverBestThresSorted(vector<vector<double> > &dataArray) {
         for (int aq = 0; aq<numDatapoints; aq++) {
             cout << orderedNegClassArray[aq] << " ";
         }
-        cout << endl;
+        cout << endl; */
 
 
 
@@ -368,14 +368,14 @@ bestThresReturns discoverBestThresSorted(vector<vector<double> > &dataArray) {
 
 
 
-        cout << "\nSorted Array" << endl;
+       /* cout << "\nSorted Array" << endl;
 
         for (size_t i=0; i<numDatapoints; ++i) {
             for (size_t j=0; j<3; ++j) {
                  cout << tempArray[i][j] << " ";
              }
              cout << endl;
-        }
+        } */
 
 
 
@@ -383,28 +383,28 @@ bestThresReturns discoverBestThresSorted(vector<vector<double> > &dataArray) {
         for(int ad=0; ad<numDatapoints; ad++) {
 
             rightPosThresError = sumPosOnTheLine + (totalNeg - sumNegOnTheLine);
-            cout << "right error = sumPosOnTheLine + totalNeg - sumNegOnTheLine" << endl;
-            cout << rightPosThresError << " = " << sumPosOnTheLine << " + " << totalNeg << " - " << sumNegOnTheLine << endl << endl;
+          //  cout << "right error = sumPosOnTheLine + totalNeg - sumNegOnTheLine" << endl;
+          //  cout << rightPosThresError << " = " << sumPosOnTheLine << " + " << totalNeg << " - " << sumNegOnTheLine << endl << endl;
 
             if (tempArray[ad][1] == -1) {
-                cout << "Previous Sum on the Neg is " << sumNegOnTheLine << endl;
+             //   cout << "Previous Sum on the Neg is " << sumNegOnTheLine << endl;
                 sumNegOnTheLine = sumNegOnTheLine + orderedNegClassArray[ad] * tempArray[ad][2];
-                cout << "sumNegOnTheLine = previous + negClassArray * tempArray weighting " << endl;
-                cout << sumNegOnTheLine << " = previousSumNeg + " << orderedNegClassArray[ad] << " * " << tempArray[ad][2] << endl << endl;
+             //   cout << "sumNegOnTheLine = previous + negClassArray * tempArray weighting " << endl;
+            //    cout << sumNegOnTheLine << " = previousSumNeg + " << orderedNegClassArray[ad] << " * " << tempArray[ad][2] << endl << endl;
             }
             else {
-                cout << "Previous Sum on the Pos is " << sumPosOnTheLine << endl;
+           //     cout << "Previous Sum on the Pos is " << sumPosOnTheLine << endl;
                 sumPosOnTheLine = sumPosOnTheLine + orderedPosClassArray[ad]*tempArray[ad][2];
 
-                cout << "SumPosOnTheLine = previous + posClassArray * Weight Array " << endl;
-                cout << sumPosOnTheLine << " = previousSumPos + " << orderedPosClassArray[ad] << " * "<< tempArray[ad][2] << endl << endl;
+          //      cout << "SumPosOnTheLine = previous + posClassArray * Weight Array " << endl;
+         //       cout << sumPosOnTheLine << " = previousSumPos + " << orderedPosClassArray[ad] << " * "<< tempArray[ad][2] << endl << endl;
             }
 
             leftPosThresError = sumNegOnTheLine + (totalPos - sumPosOnTheLine);
-            cout << "left error = sumNegOnTheLine + totalPos - sumPosOnTheLine" << endl;
-            cout << leftPosThresError << " = " << sumNegOnTheLine << " + " << totalPos << " - " << sumPosOnTheLine << endl << endl;
-            cout << "in conclusion Sum Negative on the line is " << sumNegOnTheLine << " SumPosontheLineis " << sumPosOnTheLine << endl;
-             cout << "in conclusion right error is " << rightPosThresError << " and left error is " << leftPosThresError << endl;
+       //     cout << "left error = sumNegOnTheLine + totalPos - sumPosOnTheLine" << endl;
+       //     cout << leftPosThresError << " = " << sumNegOnTheLine << " + " << totalPos << " - " << sumPosOnTheLine << endl << endl;
+      //      cout << "in conclusion Sum Negative on the line is " << sumNegOnTheLine << " SumPosontheLineis " << sumPosOnTheLine << endl;
+       //      cout << "in conclusion right error is " << rightPosThresError << " and left error is " << leftPosThresError << endl;
 
 
             if (a.minimumError > rightPosThresError) {
@@ -420,7 +420,7 @@ bestThresReturns discoverBestThresSorted(vector<vector<double> > &dataArray) {
                 a.bestDirection = -1;
             }
 
-            cout << "best error is " << a.minimumError << endl << endl;
+       //     cout << "best error is " << a.minimumError << endl << endl;
         }
 
     }
@@ -543,12 +543,12 @@ bestThresReturns discoverBestThresManual(vector<vector<double> > &dataArray) {
 
 }
 
-bool pureOrEmpty(vector<vector<double> > &dataArrayCheck) {
+bool isItPure(vector<vector<double> > &dataArrayCheck) {
 
 
     int numDatapoints = dataArrayCheck.size();
 
-    if (dataArrayCheck.size()==0) {return true;}
+    if (dataArrayCheck.size()==0) {return false;}
     int numFeatures = dataArrayCheck[0].size()-2;
 
     bool hasPos = false;
@@ -602,17 +602,20 @@ void destroy_tree(node *leaf)
     destroy_tree(leaf->left);
     destroy_tree(leaf->right);
     delete leaf;
+    leaf=NULL;
   }
 }
 
-void createNewLevel(bestThresReturns prevKey, node *leaf, int currentLevel, int maxLevel, vector<vector<double> > &prevDataArray, int method) {
+void createNewLevel(bestThresReturns prevKey, node *leaf, int currentLevel, int maxLevel, vector<vector<double> > &prevDataArray, int method,
+                    vector<string> &variableNames, char &suppress) {
 
     currentLevel++;
-    cout << "attempted to access level " << currentLevel << " of " << maxLevel << endl;
-  if(currentLevel<=maxLevel) {
+    cout << "\nAttempting to access level " << currentLevel << " of max " << maxLevel << endl;
+    fout << "\nAttempting to access level " << currentLevel << " of max " << maxLevel << endl;
 
-    bool endLeft = false;
-    bool endRight = false;
+    if(currentLevel>maxLevel) {return;}
+
+
 
     //cout << "1" << endl;
 
@@ -651,18 +654,27 @@ void createNewLevel(bestThresReturns prevKey, node *leaf, int currentLevel, int 
     int numLeftDatapoints = tempLeftArray.size();
     int numRightDatapoints = tempRightArray.size();
 
+    if (numLeftDatapoints == 0) {
+        cout << "Left Array is empty" << endl;
+        fout << "Left Array is empty" << endl;
+        return;
+    }
+    if (numRightDatapoints == 0) {
+        cout << "Right Array is empty" << endl;
+        fout << "Right Array is empty" << endl;
+        return;
+    }
+
+
+
   //  cout << "5" << endl;
 
 
-    endLeft = pureOrEmpty(tempLeftArray);
- //   cout << "6" << endl;
-    if (endLeft == true) {cout << "left path is blocked" << endl;}
-    endRight = pureOrEmpty(tempRightArray);
-  //  cout << "7" << endl;
-     if (endRight == true) {cout << "right path is blocked" << endl;}
 
 
-    if (endLeft == false) {
+
+
+    if (isItPure(tempLeftArray) == false) {
    //     cout << "8" << endl;
         leaf->left=new node;
     //    cout << "9" << endl;
@@ -677,26 +689,45 @@ void createNewLevel(bestThresReturns prevKey, node *leaf, int currentLevel, int 
        }
 
     //    cout << "10" << endl;
-         cout << "\nour left array" << endl;
+         fout << "\nOur left array at level " << currentLevel << endl;
 
-    for(int a=0; a<numLeftDatapoints; ++a) {
-      for(int b=0; b<numFeatures+2; ++b) {
-         cout << tempLeftArray[a][b] << " ";
-      }
-      cout << endl;
+    if (suppress == 'n') {
+        for(int a=0; a<numFeatures; ++a) {
+            fout << variableNames[a] << ",";
+        }
+        fout << "Class,Weighting" << endl;
+        for(int a=0; a<numLeftDatapoints; ++a) {
+            for(int b=0; b<numFeatures+2; ++b) {
+                fout << tempLeftArray[a][b] << ",";
+            }
+            fout << endl;
+        }
     }
-        cout << "Our left stuff, level is " << currentLevel << ", " << "size is " << numLeftDatapoints << ", " << leaf->left->key_value.bestDirection << " " << leaf->left->key_value.bestFeature << " " << leaf->left->key_value.bestThreshold <<
-            " " << leaf->left->key_value.minimumError << endl;
+
+        cout << "On left at level " << currentLevel << ". Set size is " << numLeftDatapoints << ". Generating new threshold:" << endl;
+        cout << "Direction: " << leaf->left->key_value.bestDirection << endl;
+        cout << "Feature: " << leaf->left->key_value.bestFeature << endl;
+        cout << "Threshold: " << leaf->left->key_value.bestThreshold << endl;
+        cout << "Error: " << leaf->left->key_value.minimumError << endl;
+        fout << "On left at level " << currentLevel << ". Set size is " << numLeftDatapoints << ". Generating new threshold:" << endl;
+        fout << "Direction: " << leaf->left->key_value.bestDirection << endl;
+        fout << "Feature: " << leaf->left->key_value.bestFeature << endl;
+        fout << "Threshold: " << leaf->left->key_value.bestThreshold << endl;
+        fout << "Error: " << leaf->left->key_value.minimumError << endl;
 
         leaf->left->left=NULL;    //Sets the left child of the child node to null
         leaf->left->right=NULL;   //Sets the right child of the child node to null
 
-        createNewLevel(leaf->left->key_value, leaf->left, currentLevel, maxLevel, tempLeftArray, method);
-        cout << "returned to level " << currentLevel << " of max " << maxLevel << endl;
-
+        createNewLevel(leaf->left->key_value, leaf->left, currentLevel, maxLevel, tempLeftArray, method, variableNames, suppress);
+        cout << "Returning to level " << currentLevel << " of max " << maxLevel << endl;
+        fout << "Returning to level " << currentLevel << " of max " << maxLevel << endl;
+    }
+    else {
+        cout << "Left path is pure" << endl;
+        fout << "Left path is pure" << endl;
     }
 
-     if (endRight == false) {
+     if (isItPure(tempRightArray) == false) {
         leaf->right=new node;
 
         if (method == 1) {
@@ -710,25 +741,44 @@ void createNewLevel(bestThresReturns prevKey, node *leaf, int currentLevel, int 
        }
 
 
-         cout << "\nour right array" << endl;
+         fout << "\nOur right array at level " << currentLevel << endl;
 
-    for(int a=0; a<numRightDatapoints; ++a) {
-      for(int b=0; b<numFeatures+2; ++b) {
-         cout << tempRightArray[a][b] << " ";
-      }
-      cout << endl;
+    if (suppress == 'n') {
+        for(int a=0; a<numFeatures; ++a) {
+            fout << variableNames[a] << ",";
+        }
+        fout << "Class,Weighting" << endl;
+
+        for(int a=0; a<numRightDatapoints; ++a) {
+            for(int b=0; b<numFeatures+2; ++b) {
+                fout << tempRightArray[a][b] << ",";
+            }
+        fout << endl;
+        }
     }
-        cout << "Our right stuff, level is " << currentLevel << ", " << "size is " << numRightDatapoints << ", " << leaf->right->key_value.bestDirection << " " << leaf->right->key_value.bestFeature << " " << leaf->right->key_value.bestThreshold <<
-            " " << leaf->right->key_value.minimumError << endl;
+        cout << "On right at level " << currentLevel << ". Set size is " << numRightDatapoints << ". Generating new threshold:" << endl;
+        cout << "Direction: " << leaf->right->key_value.bestDirection << endl;
+        cout << "Feature: " << leaf->right->key_value.bestFeature << endl;
+        cout << "Threshold: " << leaf->right->key_value.bestThreshold << endl;
+        cout << "Error: " << leaf->right->key_value.minimumError << endl;
+        fout << "On right at level " << currentLevel << ". Set size is " << numRightDatapoints << ". Generating new threshold:" << endl;
+        fout << "Direction: " << leaf->right->key_value.bestDirection << endl;
+        fout << "Feature: " << leaf->right->key_value.bestFeature << endl;
+        fout << "Threshold: " << leaf->right->key_value.bestThreshold << endl;
+        fout << "Error: " << leaf->right->key_value.minimumError << endl;
 
         leaf->right->left=NULL;  //Sets the left child of the child node to null
         leaf->right->right=NULL; //Sets the right child of the child node to null
 
-        createNewLevel(leaf->right->key_value, leaf->right, currentLevel, maxLevel, tempRightArray, method);
-        cout << "returned to level " << currentLevel << " of max " << maxLevel << endl;
+        createNewLevel(leaf->right->key_value, leaf->right, currentLevel, maxLevel, tempRightArray, method, variableNames, suppress);
+        cout << "Returning to level " << currentLevel << " of max " << maxLevel << endl;
+        fout << "Returning to level " << currentLevel << " of max " << maxLevel << endl;
+    }
+    else {
+        cout << "Right path is pure" << endl;
+        fout << "Right path is pure" << endl;
     }
 
-  }//end of if current level is less than max
 
 }//end of function
 
@@ -808,7 +858,7 @@ void findPredictions(vector<vector<double> > &dataArray, int predictArray[], nod
 }
 */
 
-node *createRootLevel(bestThresReturns key, int maxLevel, vector<vector<double> > &dataArray, int method)
+node *createRootLevel(bestThresReturns key, int maxLevel, vector<vector<double> > &dataArray, int method, vector<string> &variableNames, char &suppress)
 {
 
     node *root=new node;
@@ -818,7 +868,7 @@ node *createRootLevel(bestThresReturns key, int maxLevel, vector<vector<double> 
     int currentLevel = 1;
 
     if (currentLevel < maxLevel) {
-        createNewLevel(key, root, currentLevel, maxLevel, dataArray, method);
+        createNewLevel(key, root, currentLevel, maxLevel, dataArray, method, variableNames, suppress);
 
     }
     //cout << "key is " << key.bestDirection << " " << key.bestThreshold << " current level is " << currentLevel << " maxLevel is " << maxLevel << endl;
@@ -849,35 +899,47 @@ int main() {
     cout << "Enter the name of the training dataset:" << endl;
     cout << ">", cin >> filename;
     ifstream in(filename);
+    fout << "Training dataset: " << filename << endl;
 
     cout << endl;
     cout << "Enter the name of the test dataset:" << endl;
     cout << ">", cin >> filename2;
+    fout << "Test dataset: " << filename2 << endl;
 
      cout << endl;
     cout << "Detailed results will be stored in output.csv.\nSuppress listings of datasets? y or n:" << endl;
      cout << ">", cin >> suppress;
 
 
-     ofstream fout("output.csv");  // default mode is ios::out | ios::trunc
+    // default mode is ios::out | ios::trunc
    //if (!fout) {
     //  cerr << "error: open file for output failed!" << endl;
     //  abort();  // in <cstdlib> header
 
 
-
+ cout << endl;
     cout << "Enter the number of boosting rounds:" << endl;
     cout << ">", cin >> numBoostingRounds;
+    fout << "Number of Boosting Rounds: " << numBoostingRounds << endl;
 
-
+ cout << endl;
     cout << "Enter the number of tree levels (a level of one is a stump):" << endl;
     cout << ">", cin >> maxLevel;
+    fout << "Max Number of Tree Levels: " << maxLevel << endl;
 
-
+ cout << endl;
     cout << "Choose threshold discovery method number:\n1 Manual (brute force)\n2 Alternative manual using Sort\n3 Gini Impurity" << endl;
     cout << ">", cin >> method;
-
-    auto start = std::chrono::high_resolution_clock::now();
+    fout << "Decision Tree Method: ";
+    if (method == 1) {
+        fout << "Manual (brute force)" << endl;
+    }
+    else if (method == 2) {
+        fout << "Alternative manual using Sort" << endl;
+    }
+    else {
+        fout << "Gini Impurity" << endl;
+    }
 
 
 
@@ -920,7 +982,7 @@ int main() {
 
     int numDatapoints = dataArray.size();  //counts rows
 
-    fout << "full number of datapoints is " << numDatapoints << endl;
+    //cout << "full number of datapoints is " << numDatapoints << endl;
 
 
     double initialWeight = 1.0/numDatapoints;      //our initial weightings of each datapoint is uniform distribution.
@@ -942,9 +1004,12 @@ int main() {
     double alpha;
     double storedAlphas[numBoostingRounds];
 
-
+    auto start = std::chrono::high_resolution_clock::now();
 
    for (int boostNum=0; boostNum<numBoostingRounds; boostNum++) {
+
+       cout << "\nBOOST ROUND " << boostNum+1 << endl << endl;
+       fout << "\nBOOST ROUND " << boostNum+1 << endl << endl;
 
        node *root = NULL;
 
@@ -959,10 +1024,18 @@ int main() {
         a =  discoverBestThresGini(dataArray);
        }
 
-       cout << a.bestDirection << " " << a.bestFeature << " " << a.bestThreshold << " " << a.minimumError << endl;
+       cout << "At level 1, set size is " << numDatapoints << endl;
+       cout << "Direction: " << a.bestDirection << endl;
+       cout << "Feature: " << a.bestFeature << endl;
+       cout << "Threshold: " << a.bestThreshold << endl;
+       cout << "Error: " << a.minimumError << endl;
+       fout << "At level 1 set size is " << numDatapoints << endl;
+       fout << "Direction: " << a.bestDirection << endl;
+       fout << "Feature: " << a.bestFeature << endl;
+       fout << "Threshold: " << a.bestThreshold << endl;
+       fout << "Error: " << a.minimumError << endl;
 
-
-       root = createRootLevel(a, maxLevel, dataArray, method);   //will create entire binary tree of levels by recursive calls
+       root = createRootLevel(a, maxLevel, dataArray, method, variableNames, suppress);   //will create entire binary tree of levels by recursive calls
 
        boostPointers[boostNum] = root;
 
@@ -987,11 +1060,11 @@ int main() {
 
         }
 
-        cout << "Actual\t\tPrediction Array" << endl;
-    for (int m=0; m<numDatapoints; m++) {
+       /* cout << "Actual\t\tPrediction Array" << endl;
+    //for (int m=0; m<numDatapoints; m++) {
 
-        cout << dataArray[m][numFeatures] << "\t\t" << predictArray[m] << endl;
-    }
+      //  cout << dataArray[m][numFeatures] << "\t\t" << predictArray[m] << endl;
+   // }
 
     int correct_count = 0;
     for (int m=0; m<numDatapoints; m++) {
@@ -1000,7 +1073,7 @@ int main() {
             }
     }
 
-    cout << "Misclassication Proportion without boosting is " << 1.0 - ((double)correct_count/(double)numDatapoints) << endl;
+    cout << "Misclassication Proportion without boosting is " << 1.0 - ((double)correct_count/(double)numDatapoints) << endl; */
 
         //everytime we've calculated error rate previously it's been for building each level of our decision tree, now we need to find overall
         //error rate for the entire decision tree classifier and use it to calculate it's alpha.
@@ -1035,13 +1108,22 @@ int main() {
             }
         }
 
-        cout << "error rate with weightings is " << errorRate << endl; //calculating error rate
+        //cout << "error rate with weightings is " << errorRate << endl; //calculating error rate
+
+
+
+                //need this offset from zero since calculating alpha is impossible otherwise..
+
 
         if (errorRate == 0.0) {
-            errorRate = 0.000001;      //need this offset from zero since calculating alpha is impossible otherwise..
+            alpha = 0.5*(log((1.0 - errorRate + 0.00001)/(errorRate + 0.00001)));
+        }
+        else {
+            alpha = 0.5*(log((1.0 - errorRate)/(errorRate)));
         }
 
-        double alpha = 0.5*(log((1.0 - errorRate)/(errorRate)));
+        cout << "\nRound Alpha is " << alpha << endl;
+        fout << "\nRound Alpha is " << alpha << endl;
 
         storedAlphas[boostNum] = alpha;
 
@@ -1051,19 +1133,26 @@ int main() {
             dataArray[i][numFeatures+1] = dataArray[i][numFeatures+1] * exp((-alpha)*dataArray[i][numFeatures]*predictArray[i]);
             sumWeights = sumWeights + dataArray[i][numFeatures+1];
         }
+
         for (int i=0; i< numDatapoints; i++) {   //normalise the weights
             dataArray[i][numFeatures+1] = dataArray[i][numFeatures+1]/sumWeights;
 
         }
 
+    /*destroy_tree(root);
+
+    if (root==NULL){
+        cout << "our pointer is NULL" << endl;
+    }*/
+
    }//end boosting loop
 
-  // for(int a=0; a<numDatapoints; ++a) {
-   //     for(int b=0; b<numFeatures+2; ++b) {
-   //        cout << dataArray[a][b] << " ";
-     //  }
-     //   cout << endl;
-   //}
+  /* for(int a=0; a<numDatapoints; ++a) {
+       for(int b=0; b<numFeatures+2; ++b) {
+          cout << dataArray[a][b] << " ";
+    }
+     cout << endl;
+  } */
 
 
     ifstream in2(filename2);
@@ -1133,32 +1222,68 @@ int main() {
         classifierSumArray[k] =  classifierSumArray[k] + storedAlphas[i] * predict2Array[k];
 
     }//end boosting round loop
-
-    /*cout << "Actual\t\tPrediction" << endl;
     for (int m=0; m<numDatapoints; m++) {
-        if (classifierSumArray[m] >= 0) {
-            finalClassification[m] = 1;
-        }
-        else {
-             finalClassification[m] = -1;
+            if (classifierSumArray[m] >= 0) {
+                finalClassification[m] = 1;
+            }
+            else {
+                finalClassification[m] = -1;
 
-        }
-        cout << data2Array[m][numFeatures] << "\t\t" << finalClassification[m] << endl;
-    }*/
-
+            }
+    }
+    int misClass[numDatapoints];
     int correct_count = 0;
     for (int m=0; m<numDatapoints; m++) {
             if (finalClassification[m] == data2Array[m][numFeatures]) {
                 correct_count++;
+                misClass[m] = 0;
+            }
+            else {
+                misClass[m] = 1;
             }
     }
+
+
+
+
+
+
+        for(int a=0; a<numFeatures; ++a) {
+            fout << variableNames2[a] << ",";
+        }
+        fout << "Class,Predicted,Misclass" << endl;
+
+
+        for(int a=0; a<numDatapoints; ++a) {
+            for(int b=0; b<numFeatures+1; ++b) {
+                fout << data2Array[a][b] << ",";
+            }
+            fout << finalClassification[a] << ",";
+            fout << misClass[a] << endl;
+
+        }
+
+
+
+    cout << "\nAlphas for each classifier" << endl;
+    cout << "Round\tAlpha" << endl;
+    fout << "\nAlphas for each classifier" << endl;
+    fout << "Round,Alpha" << endl;
+
+    for (int i=0; i<numBoostingRounds; ++i) {
+        cout << i+1 << "\t" << storedAlphas[i] << endl;
+        fout << i+1 << "," << storedAlphas[i] << endl;
+    }
+
+
 
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
 
-    cout << "Elapsed time: " << elapsed.count() << " s\n";
+    cout << "\nElapsed time for method: " << elapsed.count() << " s\n" << endl;
     cout << "Misclassication Proportion is " << 1.0 - ((double)correct_count/(double)numDatapoints) << endl;
-
+    fout << "\nElapsed time for method: " << elapsed.count() << " s\n" << endl;
+    fout << "Misclassication Proportion is " << 1.0 - ((double)correct_count/(double)numDatapoints) << endl;
 
 
   /*  for (int i=0; i<numDatapoints; i++) {
