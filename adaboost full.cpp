@@ -409,13 +409,23 @@ bestThresReturns discoverBestThresSorted(vector<vector<double> > &dataArray) {
 
             if (a.minimumError > rightPosThresError) {
                 a.minimumError = rightPosThresError;
-                a.bestThreshold = tempArray[ad][0];
+                if (ad != 0) {
+                    a.bestThreshold = (tempArray[ad-1][0]+tempArray[ad][0])/2;
+                }
+                else {
+                    a.bestThreshold = tempArray[ad][0];
+                }
                 a.bestFeature = ab;
                 a.bestDirection = 1;
             }
             if (a.minimumError > leftPosThresError) {
                 a.minimumError = leftPosThresError;
-                a.bestThreshold = tempArray[ad][0];
+                if (ad != 0) {
+                    a.bestThreshold = (tempArray[ad-1][0]+tempArray[ad][0])/2;
+                }
+                else {
+                    a.bestThreshold = tempArray[ad][0];
+                }
                 a.bestFeature = ab;
                 a.bestDirection = -1;
             }
@@ -454,36 +464,25 @@ bestThresReturns discoverBestThresManual(vector<vector<double> > &dataArray) {
     //array is passed fine
     */
     int directionArray[2] = {1, -1};
-
     for(int i=0; i<numFeatures; ++i) {   //first loop, cycle through features
-
         for(int j=0; j<2; ++j) {  //second loop, need our cycle to test both directions
-
-            for (int k=0; k<numDatapoints; ++k) { //third loop, cycle through datapoint values for each feature
-
+            for (int k=0; k<numDatapoints; ++k) { //third loop, cycle through all datapoint values for each feature as possible thresholds
                 int tempArray[numDatapoints];
-
                 if (directionArray[j] == 1) {
-                        for(int m =0; m<numDatapoints; ++m) {
+                        for(int m =0; m<numDatapoints; ++m) { //4th loop, test all datapoints against current threshold
                             tempArray[m] = (dataArray[m][i] >= dataArray[k][i]);
-                            //cout << "compare " << dataArray[m][i] << " to threshold " << dataArray[k][i] << endl;
-                            //cout << "1s for trues, 0s for falses "<< tempArray[m] << endl;
                         }
                 }
-
-
                 if (directionArray[j] == -1) {
                         for(int m =0; m<numDatapoints; ++m) {
                             tempArray[m] = (dataArray[m][i] < dataArray[k][i]);
                         }
                 }
-
                 for (int n=0; n<numDatapoints; ++n) {
                     if (tempArray[n] == 0) {
                         tempArray[n] = -1;          //convert all our 0s (from falses) to -1s our class.
                     }
                 }
-                //cout << endl;
 
                 int comparisonArray[numDatapoints];
 
@@ -607,7 +606,7 @@ void destroy_tree(node *leaf)
 }
 
 void createNewLevel(bestThresReturns prevKey, node *leaf, int currentLevel, int maxLevel, vector<vector<double> > &prevDataArray, int method,
-                    vector<string> &variableNames, char &suppress) {
+                    vector<string> &variableNames, char &suppress, int &maxReached) {
 
     currentLevel++;
     cout << "\nAttempting to access level " << currentLevel << " of max " << maxLevel << endl;
@@ -676,6 +675,9 @@ void createNewLevel(bestThresReturns prevKey, node *leaf, int currentLevel, int 
 
     if (isItPure(tempLeftArray) == false) {
    //     cout << "8" << endl;
+        if(maxReached < currentLevel) {
+            maxReached++;
+        }
         leaf->left=new node;
     //    cout << "9" << endl;
         if (method == 1) {
@@ -718,7 +720,7 @@ void createNewLevel(bestThresReturns prevKey, node *leaf, int currentLevel, int 
         leaf->left->left=NULL;    //Sets the left child of the child node to null
         leaf->left->right=NULL;   //Sets the right child of the child node to null
 
-        createNewLevel(leaf->left->key_value, leaf->left, currentLevel, maxLevel, tempLeftArray, method, variableNames, suppress);
+        createNewLevel(leaf->left->key_value, leaf->left, currentLevel, maxLevel, tempLeftArray, method, variableNames, suppress, maxReached);
         cout << "Returning to level " << currentLevel << " of max " << maxLevel << endl;
         fout << "Returning to level " << currentLevel << " of max " << maxLevel << endl;
     }
@@ -728,6 +730,9 @@ void createNewLevel(bestThresReturns prevKey, node *leaf, int currentLevel, int 
     }
 
      if (isItPure(tempRightArray) == false) {
+        if(maxReached < currentLevel) {
+            maxReached++;
+        }
         leaf->right=new node;
 
         if (method == 1) {
@@ -770,7 +775,7 @@ void createNewLevel(bestThresReturns prevKey, node *leaf, int currentLevel, int 
         leaf->right->left=NULL;  //Sets the left child of the child node to null
         leaf->right->right=NULL; //Sets the right child of the child node to null
 
-        createNewLevel(leaf->right->key_value, leaf->right, currentLevel, maxLevel, tempRightArray, method, variableNames, suppress);
+        createNewLevel(leaf->right->key_value, leaf->right, currentLevel, maxLevel, tempRightArray, method, variableNames, suppress, maxReached);
         cout << "Returning to level " << currentLevel << " of max " << maxLevel << endl;
         fout << "Returning to level " << currentLevel << " of max " << maxLevel << endl;
     }
@@ -858,7 +863,8 @@ void findPredictions(vector<vector<double> > &dataArray, int predictArray[], nod
 }
 */
 
-node *createRootLevel(bestThresReturns key, int maxLevel, vector<vector<double> > &dataArray, int method, vector<string> &variableNames, char &suppress)
+node *createRootLevel(bestThresReturns key, int maxLevel, vector<vector<double> > &dataArray, int method,
+                       vector<string> &variableNames, char &suppress, int &maxReached)
 {
 
     node *root=new node;
@@ -867,8 +873,9 @@ node *createRootLevel(bestThresReturns key, int maxLevel, vector<vector<double> 
     root->right=NULL;
     int currentLevel = 1;
 
+
     if (currentLevel < maxLevel) {
-        createNewLevel(key, root, currentLevel, maxLevel, dataArray, method, variableNames, suppress);
+        createNewLevel(key, root, currentLevel, maxLevel, dataArray, method, variableNames, suppress, maxReached);
 
     }
     //cout << "key is " << key.bestDirection << " " << key.bestThreshold << " current level is " << currentLevel << " maxLevel is " << maxLevel << endl;
@@ -987,7 +994,6 @@ int main() {
 
     double initialWeight = 1.0/numDatapoints;      //our initial weightings of each datapoint is uniform distribution.
 
-
     for (int h=0; h<numDatapoints; ++h) {
         dataArray[h].push_back(initialWeight);   //creating a weighting column on our array
     }
@@ -1011,9 +1017,11 @@ int main() {
        cout << "\nBOOST ROUND " << boostNum+1 << endl << endl;
        fout << "\nBOOST ROUND " << boostNum+1 << endl << endl;
 
+       int maxReached = 1;
        node *root = NULL;
 
        bestThresReturns a;
+
       if (method == 1) {
          a =  discoverBestThresManual(dataArray);
        }
@@ -1035,7 +1043,7 @@ int main() {
        fout << "Threshold: " << a.bestThreshold << endl;
        fout << "Error: " << a.minimumError << endl;
 
-       root = createRootLevel(a, maxLevel, dataArray, method, variableNames, suppress);   //will create entire binary tree of levels by recursive calls
+       root = createRootLevel(a, maxLevel, dataArray, method, variableNames, suppress, maxReached);   //will create entire binary tree of levels by recursive calls
 
        boostPointers[boostNum] = root;
 
@@ -1122,8 +1130,10 @@ int main() {
             alpha = 0.5*(log((1.0 - errorRate)/(errorRate)));
         }
 
-        cout << "\nRound Alpha is " << alpha << endl;
-        fout << "\nRound Alpha is " << alpha << endl;
+        cout << "\nMax Tree Level Reached: " << maxReached << endl;
+        fout << "\nMax Tree Level Reached: " << maxReached << endl;
+        cout << "Round Alpha: " << alpha << endl;
+        fout << "Round Alpha: " << alpha << endl;
 
         storedAlphas[boostNum] = alpha;
 
@@ -1193,8 +1203,8 @@ int main() {
     in2.close();
 
 
-    numFeatures = data2Array[0].size()-1;
-    numDatapoints = data2Array.size();
+    int numTestFeatures = data2Array[0].size()-1;
+    int numTestDatapoints = data2Array.size();
 
    /* for (int i=0; i<numDatapoints; i++) {
         for (int j=0; j<numFeatures; j++) {
@@ -1203,39 +1213,90 @@ int main() {
         cout << endl;
     } */
 
-    int predict2Array[numDatapoints];
-    double classifierSumArray[numDatapoints];
+    int predictTestArray[numTestDatapoints];
+    int predictTrainArray[numDatapoints];
 
-    for (int i=0; i<numDatapoints; i++) {
-        classifierSumArray[i] = 0.0;
+    double classifierSumTestArray[numTestDatapoints];
+    double classifierSumTrainArray[numDatapoints];
+
+    for (int i=0; i<numTestDatapoints; i++) {
+        classifierSumTestArray[i] = 0.0;
+    }
+     for (int i=0; i<numDatapoints; i++) {
+        classifierSumTrainArray[i] = 0.0;
     }
 
-    int finalClassification[numDatapoints];
+    int finalTestClassification[numTestDatapoints];
+    int finalTrainClassification[numDatapoints];
 
-    //boosting array 0 minimumError, 1 bestThreshold, 2 bestDirection, 3 bestFeature, 4 alpha
+
     for (int i=0; i<numBoostingRounds; i++) {
-        for (int j=0; j<numDatapoints; j++) {
-            findPredictions(data2Array, predict2Array, boostPointers[i], j, numFeatures, numDatapoints);   //predict2Array passed by reference
+        for (int j=0; j<numTestDatapoints; j++) {
+            findPredictions(data2Array, predictTestArray, boostPointers[i], j, numTestFeatures, numTestDatapoints);   //predictTestArray passed by reference
+
+
         }//end datapoint loop, have a predict array at end for the boost round
 
-        for (int k=0; k<numDatapoints; k++)
-        classifierSumArray[k] =  classifierSumArray[k] + storedAlphas[i] * predict2Array[k];
+        for (int j=0; j<numDatapoints; j++) {
+
+            findPredictions(dataArray, predictTrainArray, boostPointers[i], j, numFeatures, numDatapoints);
+
+        }
+
+
+        for (int k=0; k<numTestDatapoints; k++) {
+            classifierSumTestArray[k] =  classifierSumTestArray[k] + storedAlphas[i] * predictTestArray[k];
+        }
+
+        for (int k=0; k<numDatapoints; k++) {
+         classifierSumTrainArray[k] = classifierSumTrainArray[k] + storedAlphas[i] * predictTrainArray[k];
+        }
 
     }//end boosting round loop
-    for (int m=0; m<numDatapoints; m++) {
-            if (classifierSumArray[m] >= 0) {
-                finalClassification[m] = 1;
+
+    for (int m=0; m<numTestDatapoints; m++) {
+            if (classifierSumTestArray[m] >= 0) {
+                finalTestClassification[m] = 1;
             }
             else {
-                finalClassification[m] = -1;
+                finalTestClassification[m] = -1;
 
             }
+            if (classifierSumTestArray[m] >= 0) {
+                finalTestClassification[m] = 1;
+            }
+            else {
+                finalTestClassification[m] = -1;
+
+            }
+
     }
-    int misClass[numDatapoints];
-    int correct_count = 0;
     for (int m=0; m<numDatapoints; m++) {
-            if (finalClassification[m] == data2Array[m][numFeatures]) {
-                correct_count++;
+            if (classifierSumTrainArray[m] >= 0) {
+                finalTrainClassification[m] = 1;
+            }
+            else {
+                finalTrainClassification[m] = -1;
+
+            }
+            if (classifierSumTrainArray[m] >= 0) {
+                finalTrainClassification[m] = 1;
+            }
+            else {
+                finalTrainClassification[m] = -1;
+
+            }
+
+    }
+
+
+    int misClass[numDatapoints];
+    int correctTestCount = 0;
+    int correctTrainCount = 0;
+
+    for (int m=0; m<numTestDatapoints; m++) {
+            if (finalTestClassification[m] == data2Array[m][numFeatures]) {
+                correctTestCount++;
                 misClass[m] = 0;
             }
             else {
@@ -1243,22 +1304,33 @@ int main() {
             }
     }
 
+    for (int m=0; m<numDatapoints; m++) {
+            if (finalTrainClassification[m] == dataArray[m][numFeatures]) {
+                correctTrainCount++;
+
+            }
+
+    }
 
 
 
 
 
-        for(int a=0; a<numFeatures; ++a) {
+
+
+
+
+        for(int a=0; a<numTestFeatures; ++a) {
             fout << variableNames2[a] << ",";
         }
         fout << "Class,Predicted,Misclass" << endl;
 
 
-        for(int a=0; a<numDatapoints; ++a) {
-            for(int b=0; b<numFeatures+1; ++b) {
+        for(int a=0; a<numTestDatapoints; ++a) {
+            for(int b=0; b<numTestFeatures+1; ++b) {
                 fout << data2Array[a][b] << ",";
             }
-            fout << finalClassification[a] << ",";
+            fout << finalTestClassification[a] << ",";
             fout << misClass[a] << endl;
 
         }
@@ -1281,9 +1353,11 @@ int main() {
     std::chrono::duration<double> elapsed = finish - start;
 
     cout << "\nElapsed time for method: " << elapsed.count() << " s\n" << endl;
-    cout << "Misclassication Proportion is " << 1.0 - ((double)correct_count/(double)numDatapoints) << endl;
+    cout << "Training Misclassification Proportion: " << 1.0 - ((double)correctTrainCount/(double)numDatapoints) << endl;
+    cout << "Testing Misclassification Proportion: " << 1.0 - ((double)correctTestCount/(double)numTestDatapoints) << endl;
     fout << "\nElapsed time for method: " << elapsed.count() << " s\n" << endl;
-    fout << "Misclassication Proportion is " << 1.0 - ((double)correct_count/(double)numDatapoints) << endl;
+    fout << "Training Misclassification Proportion: " << 1.0 - ((double)correctTrainCount/(double)numDatapoints) << endl;
+    fout << "Testing Misclassification Proportion: " << 1.0 - ((double)correctTestCount/(double)numTestDatapoints) << endl;
 
 
   /*  for (int i=0; i<numDatapoints; i++) {
